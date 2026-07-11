@@ -3,9 +3,6 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const pdfParse = require("pdf-parse");
-
 export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
@@ -32,6 +29,8 @@ export async function POST(req: Request) {
     } else if (file.type === "application/pdf" || file.name.endsWith(".pdf")) {
       const bytes = await file.arrayBuffer();
       try {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const pdfParse = require("pdf-parse");
         const pdfData = await pdfParse(Buffer.from(bytes));
         text = pdfData.text;
       } catch {
