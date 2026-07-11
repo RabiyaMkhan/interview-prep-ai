@@ -27,15 +27,7 @@ export async function POST(req: Request) {
     if (file.type === "text/plain" || file.name.endsWith(".txt")) {
       text = await file.text();
     } else if (file.type === "application/pdf" || file.name.endsWith(".pdf")) {
-      const bytes = await file.arrayBuffer();
-      try {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const pdfParse = require("pdf-parse");
-        const pdfData = await pdfParse(Buffer.from(bytes));
-        text = pdfData.text;
-      } catch {
-        text = "[PDF uploaded - text extraction not available. Please paste your resume content as text.]";
-      }
+      text = "[PDF uploaded - please paste your resume content as text for best results]";
     } else {
       return NextResponse.json({ error: "Unsupported file type. Please upload PDF or TXT." }, { status: 400 });
     }
@@ -49,6 +41,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ text, filename: file.name });
   } catch (error) {
     console.error("Resume upload error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ error: "Internal server server error" }, { status: 500 });
   }
 }
