@@ -1,0 +1,204 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model User {
+  id             String    @id @default(cuid())
+  name           String?
+  email          String?   @unique
+  emailVerified  DateTime?
+  image          String?
+  password       String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  profile        Profile?
+  accounts       Account[]
+  sessions       Session[]
+  interviewSessions InterviewSession[]
+  savedQuestions  SavedQuestion[]
+  badges         UserBadge[]
+  scoreHistory   ScoreHistory[]
+
+  @@map("users")
+}
+
+model Profile {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  targetJobRole   String?
+  industry        String?
+  experienceLevel String?
+  resumePath      String?
+  resumeText      String?
+  weeklyGoal      Int      @default(3)
+  currentStreak   Int      @default(0)
+  lastPracticeDate DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("profiles")
+}
+
+model InterviewSession {
+  id              String   @id @default(cuid())
+  userId          String
+  jobRole         String
+  interviewType   String
+  difficulty      String
+  duration        String
+  jobDescription  String?
+  resumeText      String?
+  status          String   @default("in_progress")
+  overallScore    Float?
+  summary         String?
+  startedAt       DateTime @default(now())
+  completedAt     DateTime?
+  updatedAt       DateTime @updatedAt
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  questions Question[]
+
+  @@map("interview_sessions")
+}
+
+model Question {
+  id              String   @id @default(cuid())
+  sessionId       String
+  questionText    String
+  questionType    String?
+  answerText      String?
+  isVoiceInput    Boolean  @default(false)
+  aiFeedback      String?
+  score           Float?
+  strengths       String?
+  improvements    String?
+  fillerWords     String?
+  suggestedAnswer String?
+  orderIndex      Int
+  createdAt       DateTime @default(now())
+
+  session InterviewSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@map("questions")
+}
+
+model ScoreHistory {
+  id              String   @id @default(cuid())
+  userId          String
+  sessionId       String
+  overallScore    Float
+  clarityScore    Float?
+  relevanceScore  Float?
+  confidenceScore Float?
+  structureScore  Float?
+  technicalScore  Float?
+  jobRole         String
+  interviewType   String
+  difficulty      String
+  createdAt       DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("score_history")
+}
+
+model SavedQuestion {
+  id              String   @id @default(cuid())
+  userId          String
+  questionText    String
+  category        String?
+  jobRole         String?
+  difficulty      String?
+  isMastered      Boolean  @default(false)
+  attempts        Int      @default(0)
+  bestScore       Float?
+  createdAt       DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("saved_questions")
+}
+
+model Badge {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String
+  icon        String?
+  category    String
+  requirement String
+  createdAt   DateTime @default(now())
+
+  users UserBadge[]
+}
+
+model UserBadge {
+  id        String   @id @default(cuid())
+  userId    String
+  badgeId   String
+  earnedAt  DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge Badge @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, badgeId])
+  @@map("user_badges")
+}
+
+model QuestionBank {
+  id           String   @id @default(cuid())
+  questionText String
+  category     String
+  jobRole      String
+  difficulty   String
+  tags         String?
+  createdAt    DateTime @default(now())
+
+  @@map("question_bank")
+}
