@@ -1,9 +1,10 @@
 let anthropic: any = null;
 
-function getAnthropic() {
+async function getAnthropic() {
   if (!anthropic && process.env.ANTHROPIC_API_KEY) {
     try {
-      const Anthropic = require("@anthropic-ai/sdk").default || require("@anthropic-ai/sdk");
+      const sdk = await import("@anthropic-ai/sdk");
+      const Anthropic = sdk.default || sdk;
       anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
     } catch { /* fallback */ }
   }
@@ -315,7 +316,7 @@ export async function generateQuestion(context: InterviewContext): Promise<strin
   }
 
   try {
-    const client = getAnthropic();
+    const client = await getAnthropic();
     const systemPrompt = buildSystemPrompt(context);
     const userPrompt = buildQuestionPrompt(context);
 
@@ -355,7 +356,7 @@ export async function generateFeedback(
   }
 
   try {
-    const client = getAnthropic();
+    const client = await getAnthropic();
     const message = await client.messages.create({
       model: "claude-sonnet-4-20250514",
       max_tokens: 2048,
@@ -435,7 +436,7 @@ export async function generateSessionReport(
   }
 
   try {
-    const client = getAnthropic();
+    const client = await getAnthropic();
     const message = await client.messages.create({
       model: "claude-sonnet-4-20250514",
       max_tokens: 3000,
@@ -497,7 +498,7 @@ export async function generateFollowUp(
   }
 
   try {
-    const client = getAnthropic();
+    const client = await getAnthropic();
     const message = await client.messages.create({
       model: "claude-sonnet-4-20250514",
       max_tokens: 512,
