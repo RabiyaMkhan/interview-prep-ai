@@ -1,18 +1,10 @@
-let anthropic: any = null;
-
-async function getAnthropic() {
-  if (!anthropic && process.env.ANTHROPIC_API_KEY) {
-    try {
-      const sdk = await import("@anthropic-ai/sdk");
-      const Anthropic = sdk.default || sdk;
-      anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-    } catch { /* fallback */ }
-  }
-  return anthropic;
+function hasApiKey(): boolean {
+  return false;
 }
 
-function hasApiKey(): boolean {
-  return !!(process.env.ANTHROPIC_API_KEY && process.env.ANTHROPIC_API_KEY.length > 10);
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+async function getAnthropic(): Promise<any> {
+  return null;
 }
 
 export interface InterviewContext {
